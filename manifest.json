@@ -1,0 +1,32 @@
+{
+	"manifest_version": 2,
+  	"offline_enabled": true,
+	"name": "Auchartmation",
+	"version": "1.0",
+	"description": "Records and play back test automations.",
+
+	"background": {
+    	"persistent": false,
+		"scripts": ["js/background.js"]
+	},
+
+  	"content_scripts": [{
+  		"matches":    ["http://*/*", "https://*/*"],
+    	"js":         ["js/content.js"],
+    	"run_at":     "document_idle",
+    	"all_frames": false
+  	}],
+
+	"browser_action": {
+		"default_title": "Auchartmation",
+    	"default_popup": "popup.html"
+	},
+
+	"permissions": [
+		"storage",
+		"background",
+		"tabs",
+		"http://*/*",
+		"https://*/*"
+	]
+}

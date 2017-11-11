@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" type="text/css" href="css/base.css" />
+<link rel="stylesheet" type="text/css" href="css/popup.css" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+</head>
+<body>
+	<div>
+		<div class="container-1">
+			<nav>
+  				<a id="leftBtn" href="playback.html"><</a>
+  				<a id="current_frame" href="javascript:void(0)">Record</a>
+  				<a id="rightBtn" href="playback.html">></a>
+			</nav>		
+		</div>
+  		<div class="container-2">
+    		<input type="text" id="recName" placeholder="Insert Name" />
+  		</div>
+		<div class="container-3">
+			<table id="tableRecord" class="scroll">
+				<thead>
+					<tr>
+						<th>Locator</th>
+						<th>Action</th>
+						<th>Value</th>
+						<th>Delete</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td><input class="editableCombo" type=text list=listid>
+							<datalist id=listid>
+								<select>
+									<option>1
+									<option>2
+								</select>
+							</datalist>
+						</td>
+						<td><input class="editableCombo" type=text list=listid>
+							<datalist id=listid>
+								<select>
+									<option>3
+									<option>4
+								</select>
+							</datalist>
+						</td>
+						<td><input type=text></td>
+						<td><i class="material-icons">clear</i></td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+		<div id="container-4">
+			<div class="recContainer">
+				<img id="recordBtn" src="imgs/record2.png" alt="RecBtn">
+			</div>
+			<div class="btnsContainer">
+				<button id="saveBtn" class="button bottomBtn">Save As</button>
+				<button id="clearBtn" class="button bottomBtn">Clear All</button>
+			</div>
+		</div>
+	</div>
+<script type="text/javascript" charset="utf-8" src="js/popup.js"></script>
+</body>
+</html>
