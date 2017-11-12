@@ -1,7 +1,8 @@
 
 body {
 	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,	"Helvetica Neue", Arial, sans-serif;
-	width: 400px;
+	width: 550px;
+	height: 400px;
 	margin: 0px;
 	padding: 0px;
 }
@@ -18,7 +19,7 @@ body {
 	display: block;
 	height: 10%;
 	width: 100%;
-	padding-left: 2px;
+	padding-left: 3px;
 	margin: 3px 0;
 }
 
@@ -47,7 +48,7 @@ body {
   	color: black;
 	border: solid 1px #babdba;
 	padding: 4px;
-	width: 86%;
+	width: 89.5%;
 	text-align: center;
 	font-size: 12px;
 	cursor: default;

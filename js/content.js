@@ -18,8 +18,7 @@ function myFunction(e) {
         var eventType = evt.type ? evt.type : evt;
 
         if (xpath) {
-          console.log(xpath);
-          chrome.runtime.sendMessage({type: "setInteraction", url: url, xpath: xpath, eventType: eventType});          
+          chrome.runtime.sendMessage({type: "setInteraction", url: url, xpath: xpath, eventType: eventType});
         }
     }
 }
