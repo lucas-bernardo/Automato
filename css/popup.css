@@ -67,7 +67,7 @@ table#tableRecord tbody {
 
 table#tableRecord tbody tr {
 	display: table;
-	height: 18px;
+	height: 25px;
 	width: 100%;
 }
 
@@ -99,7 +99,8 @@ table#tableRecord tbody tr:hover {
 }
 
 table#tableRecord tbody tr:hover .material-icons {
-	display: inline;
+	display: inline-block;
+	padding-top: 3.5px;
 }
 
 table#tableRecord tbody tr:nth-child(even) {

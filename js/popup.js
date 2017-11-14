@@ -1,64 +1,109 @@
-var userInterMap = new Map();
+
+//var userInterMap = new Map();
 chrome.storage.local.get("interactions", function(data) {
     if(typeof data.interactions != 'undefined') {
         //document.getElementById("tableRecord").getElementsByTagName('tbody')[0].innerHTML += data.interactions;
         var table = document.getElementById("tableRecord");
-        var ar = data.interactions.split("(?<=\\G\\d+,\\d+,\\d+),");
-        alert(ar[0]);
-        
-        for (var [key, value] of userInterMap.entries()) {
-          alert(key + ' = ' + value);
-          updateTable(table, key, value);
-        }
+        //var ar = data.interactions.split("(?<=\\G\\]d+,\\]d+,\\]d+),");
+        var userInterMap = JSON.parse(data.interactions);
+        Object.keys(userInterMap).map(function(key, index) {
+          //alert(key + ' = ' + userInterMap[key]);
+          updateTableRecord(table, key, userInterMap[key]);
+        });
     }
 });
 
-chrome.extension.getBackgroundPage().doMethod(function(userInterMap) {
-  var table = document.getElementById("tableRecord");
-  for (var [key, value] of userInterMap.entries()) {
-    console.log(key + ' = ' + value);
-    updateTable(table, key, value);
-  }
-});
+//function stringToMap(str) {
+//	var userInterMap = {};
+//	alert(str);
+//	str.replace(/(\b[^:]+):'([^']+)'/g, function ($0, param, value) {
+//		//alert(param + ' = ' + value);
+  //  	userInterMap[param] = value;
+	//});
+//
+//	return userInterMap;
+//}
 
-function updateTable(table, key, value) {
-  var row = table.insertRow(-1);
-  key++;
-  row.insertCell(0).innerHTML = createCombo(key) + createList(key, value[0]);
-  key++;
-  row.insertCell(1).innerHTML = createCombo(key) + createList(key, value[1]);
-  row.insertCell(2).innerHTML = createInput(value[2]);
-  row.insertCell(3).innerHTML = createIcon();
+//chrome.extension.getBackgroundPage().doMethod(function(userInterMap) {
+//  var table = document.getElementById("tableRecord");
+//  for (var [key, value] of userInterMap.entries()) {
+//    console.log(key + ' = ' + value);
+//    updateTable(table, key, value);
+//  }
+//});
+
+//var evnts = ["click","focus","blur","keyup","keydown","keypressed"];
+var evntsDataList = createEvntsDataList();
+function createEvntsDataList() {
+	return createList(0, ["click","focus","blur","keyup","keydown","keypressed"]);
 }
 
-function createCombo(key) {
-  var newCombo = document.createElement("input");
+//Insert a row to table record
+function updateTableRecord(table, key, value) {
+	//Add a new row at the bottom of list
+  	var row = table.insertRow(-1);
+  	//Add all cells to new row
+  	var cell0 = row.insertCell(0);
+  	var cell1 = row.insertCell(1);
+  	var cell2 = row.insertCell(2);
+  	var cell3 = row.insertCell(3);
+
+  	//Create array with found locators
+  	var locatorsArray = value[0].split("&&");
+  	
+  	cell0.appendChild(createCombo(key, locatorsArray[0]));//Add combobox to first cell and set default value
+  	cell0.appendChild(createList(key, locatorsArray));//Add datalist with all found locators
+  	cell1.appendChild(createCombo(0, value[1]));//Add combobox to second cell and set default value
+  	cell1.appendChild(evntsDataList);//Add datalist with all possible actions
+  	cell2.appendChild(createInput(value[2]));//Add input to third cell and set value if not blank
+  	cell3.appendChild(createIcon());//Add delete icon to last cell
+}
+
+//Creates a regular combobox
+function createCombo(key, value) {
+  var newCombo = document.createElement("INPUT");
   newCombo.setAttribute('class', 'editableCombo');
   newCombo.setAttribute('type', 'text');
   newCombo.setAttribute('list', key);
+  if (value) {
+  	newCombo.setAttribute('value', value);
+  }
+
+  return newCombo;
 }
 
+//Creates a regular datalist to be append in a combobox
 function createList(key, array) {
-  var dataList = document.createElement("datalist");
-  dataList.setAttribute('id', key);
+  var dataList = document.createElement("DATALIST");
+  dataList.setAttribute("id", key);
   //Creating combobox options
   for (i = 0; i < array.length; i++) {
-    var option = document.createElement("option");
-    option.setAttribute('value', array[i]);
+    var option = document.createElement("OPTION");
+    option.innerText = array[i];
     dataList.appendChild(option);
   }
+
+  return dataList;
 }
 
-function createInput(url) {
-  var newInput = document.createElement("input");
-  newInput.setAttribute('type', 'text');
-  newInput.setAttribute('value', url);
+//Creates a regular input
+function createInput(value) {
+  var newInput = document.createElement("INPUT");;
+  newInput.setAttribute("type", "text");
+  if (value) {
+  	newInput.setAttribute("value", value);
+  }
+
+  return newInput;
 }
 
+//Creates delete icon
 function createIcon() {
   var newIcon = document.createElement("i");
-  newIcon.setAttribute('class', 'material-icons');
-  newIcon.setAttribute('value', 'clear');
+  newIcon.setAttribute("class", "material-icons");
+  newIcon.innerText = "clear";
+
+  return newIcon;
 }
 
 //Clear btn functions

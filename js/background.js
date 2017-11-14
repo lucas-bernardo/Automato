@@ -1,6 +1,6 @@
 
 var userInterMap = new Map();
-var mapKey = 0;
+var mapKey = 1;
 
 chrome.runtime.onMessage.addListener(
 	    function(message, sender, sendResponse) {
@@ -25,11 +25,11 @@ chrome.runtime.onMessage.addListener(
 );
 
 function updateUserIntMap(message) {
-  var locatorArray = [message.xpath];
-  var actionArray = [message.eventType];
-  var tableRow = [locatorArray, actionArray, message.url];
+  var tableRow = [[message.xpath, message.xpath].join("&&"),
+                  message.eventType,
+                  message.url];
   userInterMap.set(mapKey, tableRow);
-  mapKey = mapKey + 2;
+  mapKey++;
 }
 
 function mapToString() {
