@@ -1,18 +1,45 @@
 
+body {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,	"Helvetica Neue", Arial, sans-serif;
+	overflow: hidden;
+	width: 550px;
+	height: 500px;
+	margin: 0px;
+	padding: 0px;
+}
+
+.button {
+	border: none;
+	text-align: center;
+	text-decoration: none;
+	cursor: pointer;
+}
+
+/*Container with recorder features*/
+#containerRecorder {
+	background-color: #2b303b;
+	border-radius: 2px;
+	position: relative;
+	display: block;
+	height: 65%;
+	width: 99.3%;
+	margin-left: 2px
+}
+
 /*Name bar*/
-.container-2 {
+#crInternal-1 {
 	position: relative;
 	display: block;
 	height: 10%;
 	width: 100%;
 	padding-left: 3px;
-	margin: 3px 0;
+	padding-top: 3px;
   	overflow: hidden;
 }
 
-.container-2 input#recName {
+#crInternal-1 input#recName {
   	width: 93.5%;
-  	background: #2b303b;
+  	background: #22262f;
   	color: #63717f;
   	border: none;
   	border-radius: 5px;
@@ -21,13 +48,46 @@
   	padding: 5px 15px;
 }
 
-.container-2 input#recName:focus {
+#crInternal-1 input#recName:focus {
     outline:none;
     background: #ffffff;
 }
 
-/* Playback table */
-.container-3 {
+/* Record action buttons */
+#crInternal-2 {
+	display: block;
+	height: 9%;
+	width: 98.5%;
+	margin-left: 2px;
+	overflow: auto;
+}
+
+/* Clear All and Save buttons */
+#crInternal-2 .btnsContainer {
+    position: relative;
+    float: right;
+    margin: 3px 0;
+}
+
+#crInternal-2 .bottomBtn {
+	display: inline;
+	color: white;
+	padding: 4px 10px;
+	font-size: 12px;
+}
+
+#crInternal-2 #clearBtn {
+	background-color: #4c4c4e;
+  	border-radius: 5px;
+}
+
+#crInternal-2 #saveBtn {
+	background-color: #00cc08;
+  	border-radius: 5px;
+}
+
+/* Record table */
+#crInternal-3 {
 	display: block;
 	width: 100%;
 	height: 75%;
@@ -37,14 +97,14 @@ table#tableRecord {
 	width: 99%;
 	margin-left: 3px;
 	text-align: center;
-	border: solid 2px #2b303b;
+	border: solid 2px #191c23;
 	border-radius: 5px;
 	border-spacing: 0;
 }
 
 table#tableRecord thead tr {
 	height: 20px;
-	background: #2b303b;
+	background: #191c23;
 	color: #fff;
 }
 
@@ -69,6 +129,7 @@ table#tableRecord tbody tr {
 	display: table;
 	height: 25px;
 	width: 100%;
+	color: #d8d9db;
 }
 
 table#tableRecord tbody td {
@@ -83,7 +144,6 @@ table#tableRecord tbody td:last-child {
 }
 
 table#tableRecord tbody tr:hover {
-	background-color: #e7f2fc;
 	cursor: default;
 }
 
@@ -94,7 +154,6 @@ table#tableRecord .material-icons {
 }
 
 table#tableRecord tbody tr:hover {
-	background-color: #e7f2fc;
 	cursor: default;
 }
 
@@ -103,13 +162,18 @@ table#tableRecord tbody tr:hover .material-icons {
 	padding-top: 3.5px;
 }
 
+table#tableRecord tbody tr:nth-child(odd) {
+	background-color: #2b303b;
+}
+
 table#tableRecord tbody tr:nth-child(even) {
-	background-color: #f2f2f2;
+	background-color: #1e2129;
 }
 
 /* Input in cell */
 table#tableRecord tbody td input {
 	background-color: transparent;
+	color: #d8d9db;
 	border: none;
 	width: 100%;
 	height: 20px;
@@ -120,49 +184,140 @@ table#tableRecord tbody td .editableCombo {
 	opacity: 100;
 }
 
-/* bottom box */
-#container-4 {
+/*Container with playback features*/
+#containerPlayback {
+	position: relative;
 	display: block;
-	height: 8%;
-	width: 98.5%;
-	margin-top: 3px;
-	margin-left: 2px;
-	overflow: auto;
+	height: 35%;
+	width: 100%;
 }
 
-/*Recording button*/
-div#container-4 .recContainer {
-    position: relative;
-    float: left;
-    margin-top: 2px;
+/*Search bar*/
+#cpInternal-1 {
+	position: relative;
+	display: block;
+	height: 10%;
+	width: 100%;
+	padding-left: 3px;
+	margin: 3px 0;
+  	overflow: hidden;
 }
 
-div#container-4 #recordBtn {
-	width: 23px;
-	height: 23px;
+#cpInternal-1 input#search {
+  	width: 98%;
+  	background: #bfc0c4;
+  	color: #63717f;
+  	border: none;
+  	border-radius: 5px;
+  	font-size: 10pt;
+  	float: left;
+  	padding: 5px 15px;
+}
+
+#cpInternal-1 .icon {
+    position: absolute;
+    background: #bfc0c4;/*2b303b*/
+  	color: #63717f;
+  	border-top-right-radius: 5px;
+  	border-bottom-right-radius: 5px;
+  	padding: 2px 5px 0 5px;
+    right: 6px;
+  	z-index: 1;
+}
+
+#cpInternal-1 .icon i {
+    font-size: 15pt;
+}
+
+#cpInternal-1 input#search:focus, .container-2 input#search:active {
+    outline:none;
+    background: #ffffff;
+}
+
+/* Playback table */
+#cpInternal-2 {
+	display: block;
+	width: 100%;
+	height: 75%;
+}
+
+table#tablePlayback {
+	width: 99%;
+	margin-left: 3px;
+	text-align: center;
+	border: solid 2px #bfc0c4;
+	border-radius: 5px;
+	border-spacing: 0;
+}
+
+table#tablePlayback thead tr {
+	height: 20px;
+	background: #bfc0c4;
+	color: #fff;
+}
+
+table#tablePlayback thead th {
+	display: inline;
+	float: left;
+	width: 10%;
+}
+
+table#tablePlayback thead th:first-child {
+	width: 64%;
+}
+
+table#tablePlayback thead th:last-child {
+	width: 6%;
+}
+
+table#tablePlayback tbody {
+	display: block;
+	width: 100%;
+	height: 100px;
+	overflow-y: scroll;
+}
+
+table#tablePlayback tbody tr {
+	display: table;
+	height: 25px;
+	width: 100%;
+}
+
+table#tablePlayback tbody td {
+	width: 10%;
+	text-align: center;
+	word-wrap: break-word;
+}
+
+table#tablePlayback tbody td:first-child {
+	width: 60%;
+}
+
+table#tablePlayback tbody tr:hover {
+	background-color: #e7f2fc;
+	cursor: default;
+}
+
+table#tablePlayback .material-icons {
+	display: none;
+	font-size: 17px;
 	cursor: pointer;
 }
 
-/* Clear all and Dropdown save buttons */
-div#container-4 .btnsContainer {
-    position: relative;
-    float: right;
-    margin-top: 3px;
+table#tablePlayback tbody tr.material-icons {
+	display: none;
 }
 
-div#container-4 .bottomBtn {
-	display: inline;
-	color: white;
-	padding: 4px 10px;
-	font-size: 12px;
+table#tablePlayback tbody tr:hover {
+	background-color: #e7f2fc;
+	cursor: default;
 }
 
-div#container-4 #clearBtn {
-	background-color: #babdba;
-  	border-radius: 5px;
+table#tablePlayback tbody tr:hover .material-icons {
+	display: inline-block;
+	padding-top: 3px;
 }
 
-div#container-4 #saveBtn {
-	background-color: #00cc08;
-  	border-radius: 5px;
+table#tablePlayback tbody tr:nth-child(even) {
+	background-color: #d8d9db;
 }

@@ -2,63 +2,92 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<link rel="stylesheet" type="text/css" href="css/base.css" />
+<link rel="stylesheet" type="text/css" href="css/recordBtn.css" />
 <link rel="stylesheet" type="text/css" href="css/popup.css" />
 <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
 </head>
 <body>
 	<div>
-		<div class="container-1">
-			<nav>
-  				<a id="leftBtn" href="playback.html"><</a>
-  				<a id="current_frame" href="javascript:void(0)">Record</a>
-  				<a id="rightBtn" href="playback.html">></a>
-			</nav>		
-		</div>
-  		<div class="container-2">
-    		<input type="text" id="recName" placeholder="Insert Name" />
-  		</div>
-		<div class="container-3">
-			<table id="tableRecord" class="scroll">
-				<thead>
-					<tr>
-						<th>Locator</th>
-						<th>Action</th>
-						<th>Value</th>
-						<th>Delete</th>
-					</tr>
-				</thead>
-				<tbody>
-					<tr>
-						<td><input class="editableCombo" type=text list=listid>
-							<datalist id=listid>
-								<select>
-									<option>1
-									<option>2
-								</select>
-							</datalist>
-						</td>
-						<td><input class="editableCombo" type=text list=listid>
-							<datalist id=listid>
-								<select>
-									<option>3
-									<option>4
-								</select>
-							</datalist>
-						</td>
-						<td><input type=text></td>
-						<td><i class="material-icons">clear</i></td>
-					</tr>
-				</tbody>
-			</table>
-		</div>
-		<div id="container-4">
-			<div class="recContainer">
-				<img id="recordBtn" src="imgs/record2.png" alt="RecBtn">
+		<div id="containerRecorder">
+  			<div id="crInternal-1">
+    			<input type="text" id="recName" placeholder="New Record Name..." />
+  			</div>
+			<div id="crInternal-2">
+				<div id="recBtnContainer">
+  					<input type="checkbox" id="btn"/>
+  					<label for="btn"></label>
+  				</div>
+				<div class="btnsContainer">
+					<button id="saveBtn" class="button bottomBtn">Save</button>
+					<button id="clearBtn" class="button bottomBtn">Clear All</button>
+				</div>
 			</div>
-			<div class="btnsContainer">
-				<button id="saveBtn" class="button bottomBtn">Save As</button>
-				<button id="clearBtn" class="button bottomBtn">Clear All</button>
+			<div id="crInternal-3">
+				<table id="tableRecord" class="scroll">
+					<thead>
+						<tr>
+							<th>Locator</th>
+							<th>Action</th>
+							<th>Value</th>
+							<th>Delete</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td><input class="editableCombo" type=text list=listid>
+								<datalist id=listid>
+									<select>
+										<option>1
+										<option>2
+									</select>
+								</datalist>
+							</td>
+							<td><input class="editableCombo" type=text list=listid>
+								<datalist id=listid>
+									<select>
+										<option>3
+										<option>4
+									</select>
+								</datalist>
+							</td>
+							<td><input type=text></td>
+							<td><i class="material-icons">clear</i></td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+		<div id="containerPlayback">
+  			<div id="cpInternal-1">
+    			<input type="search" id="search" placeholder="Search Playbacks..." />
+    			<span class="icon"><i class="material-icons">search</i></span>
+  			</div>
+			<div id="cpInternal-2">
+				<table id="tablePlayback">
+					<thead>
+						<tr>
+							<th>Name</th>
+							<th>Play</th>
+							<th>Edit</th>
+							<th>Delete</th>
+							<th></th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td>Login Automation</td>
+							<td><i class="material-icons">play_arrow</i></td>
+							<td><i class="material-icons">create</i></td>
+							<td><i class="material-icons">clear</i></td>
+						</tr>
+						<tr>
+							<td>Login Automation 2</td>
+							<td><i class="material-icons">play_arrow</i></td>
+							<td><i class="material-icons">create</i></td>
+							<td><i class="material-icons">clear</i></td>
+						</tr>
+					</tbody>
+				</table>
 			</div>
 		</div>
 	</div>
