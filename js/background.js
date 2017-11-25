@@ -6,30 +6,28 @@ chrome.runtime.onMessage.addListener(
 	    function(message, sender, sendResponse) {
 	        switch(message.type) {
 	            case "setInteraction":
-                updateUserIntMap(message);
-                  //listId = listId + 1;
-                  //var tableRow = "<tr><td><input class=\"editableCombo\" type=text list=" + listId + "><datalist id=" + listId + "><select><option>" + message.xpath + "</select></datalist></td>"
-                   // + "<td><input class=\"editableCombo\" type=text list=" + listId + "><datalist id=" + listId + "><select><option>" + message.eventType + "</select></datalist></td>"
-                   // + "<td><input type=text value=\"" + message.url + "\"></td>"
-                  //  + "<td><i class=\"material-icons\">clear</i></td>"
-                 //   + "</tr>";
-
-    
-                 updateInteractions(mapToString());
-	                break;
+                  updateUserIntMap(message);
+	              break;
+              case "isRecording":
+                updateIsRecording(message.rec);
 	            default:
-	                console.error("Unrecognised message: ", message);
+	              console.error("Unrecognised message: ", message);
 	        }
           sendResponse();
 	    }
 );
 
 function updateUserIntMap(message) {
-  var tableRow = [[message.xpath, message.xpath].join("&&"),
+  chrome.storage.local.get("isRecording", function(result) {
+    if (result.isRecording == true) {
+      var tableRow = [[message.xpath, message.xpath].join("&&"),
                   message.eventType,
                   message.url];
-  userInterMap.set(mapKey, tableRow);
-  mapKey++;
+      userInterMap.set(mapKey, tableRow);
+      mapKey++;
+      updateInteractions(mapToString());
+    }
+  });
 }
 
 function mapToString() {
@@ -38,14 +36,26 @@ function mapToString() {
   return JSON.stringify(obj);
 }
 
-function updateInteractions(newInteraction) {
+function updateInteractions(value) {
   // Check that there's some code there.
-  if (!newInteraction) {
+  if(typeof value == 'undefined') {
     alert('Error: No value specified');
     return;
   }
 
-  chrome.storage.local.get(["interactions"], function(result) {
-    chrome.storage.local.set({interactions: newInteraction});
+  chrome.storage.local.get("interactions", function(result) {
+    chrome.storage.local.set({interactions: value});
+  });
+}
+
+function updateIsRecording(value) {
+  // Check that there's some valid value there.
+  if(typeof value == 'undefined') {
+    alert('Error: No value specified');
+    return;
+  }
+
+  chrome.storage.local.get("isRecording", function(result) {
+    chrome.storage.local.set({isRecording: value});
   });
 }

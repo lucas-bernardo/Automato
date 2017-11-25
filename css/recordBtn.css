@@ -26,11 +26,11 @@
   height: 50px;
 }
 
-#recBtnContainer #btn {
+#recBtnContainer #recordBtn {
   display: none;
 }
 
-#recBtnContainer #btn + label:before {
+#recBtnContainer #recordBtn + label:before {
   position: absolute;
   left: 45%;
   top: 5%;
@@ -43,7 +43,7 @@
   cursor: pointer;
 }
 
-#recBtnContainer #btn + label:after {
+#recBtnContainer #recordBtn + label:after {
   position: absolute;
   left: 43%;
   top: 4%;
@@ -55,7 +55,7 @@
   cursor: pointer;
 }
 
-#recBtnContainer #btn:checked + label:after {
+#recBtnContainer #recordBtn:checked + label:after {
   -webkit-animation: stop 0.5s infinite cubic-bezier(0.4, -0.9, 0.9, 1);
   -webkit-animation-iteration-count: 1;
   -webkit-animation-fill-mode: forwards;

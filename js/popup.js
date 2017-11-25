@@ -1,4 +1,9 @@
 
+//set recording button
+chrome.storage.local.get("isRecording", function(result) {
+  document.getElementById("recordBtn").checked = result.isRecording;
+});
+
 //var userInterMap = new Map();
 chrome.storage.local.get("interactions", function(data) {
     if(typeof data.interactions != 'undefined') {
@@ -12,25 +17,6 @@ chrome.storage.local.get("interactions", function(data) {
         });
     }
 });
-
-//function stringToMap(str) {
-//	var userInterMap = {};
-//	alert(str);
-//	str.replace(/(\b[^:]+):'([^']+)'/g, function ($0, param, value) {
-//		//alert(param + ' = ' + value);
-  //  	userInterMap[param] = value;
-	//});
-//
-//	return userInterMap;
-//}
-
-//chrome.extension.getBackgroundPage().doMethod(function(userInterMap) {
-//  var table = document.getElementById("tableRecord");
-//  for (var [key, value] of userInterMap.entries()) {
-//    console.log(key + ' = ' + value);
-//    updateTable(table, key, value);
-//  }
-//});
 
 //var evnts = ["click","focus","blur","keyup","keydown","keypressed"];
 var evntsDataList = createEvntsDataList();
@@ -105,6 +91,11 @@ function createIcon() {
 
   return newIcon;
 }
+
+//Recording Btn
+document.getElementById("recordBtn").onclick = function () {
+ 	chrome.runtime.sendMessage({type: "isRecording", rec: document.getElementById("recordBtn").checked});
+};
 
 //Clear btn functions
 document.getElementById("clearBtn").onclick = function () {
