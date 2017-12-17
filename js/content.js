@@ -1,4 +1,6 @@
-var evnts=["click","focus","blur","keyup","keydown","keypressed"];
+var evnts = ["click","focus","blur","keyup"];
+var oldEvent = [];
+var inputVal;
 // You can also Use mouseup/down, mousemove, resize and scroll
 for(var i=0;i<evnts.length;i++){
     window.addEventListener(""+evnts[i]+"", function(e){ myFunction(e); }, false);
@@ -13,14 +15,62 @@ function myFunction(e) {
             return;
         }
 
+        var element = e.srcElement;
+        if (!element) {
+          return;
+        }
+
         var url = window.location.href;
-        var xpath = getXpath(e.srcElement);
+        var xpath = getXpath(element);
+        var aXpath = getAbsoluteXpath(element);
         var eventType = evt.type ? evt.type : evt;
 
-        if (xpath) {
-          chrome.runtime.sendMessage({type: "setInteraction", url: url, xpath: xpath, eventType: eventType});
+        if (xpath && eventType) {
+          if (!userIsTyping(element, url, xpath, aXpath, eventType)) {
+            chrome.runtime.sendMessage({type: "setInteraction", url: url, xpath: [xpath, aXpath], eventType: eventType, val: inputVal});
+          }
         }
     }
+}
+
+function userIsTyping(element, url, xpath, aXpath, eventType) {//Talvex não passar todos esses vars
+  if ((oldEvent.length <= 0 || oldEvent[0] == element) && element.tagName == "INPUT") {
+    oldEvent[0] = element;
+    oldEvent[1] = url;
+    oldEvent[2] = xpath;
+    oldEvent[3] = aXpath;
+    oldEvent[4] = eventType;
+    oldEvent[5] = element.value;
+    return true;
+  } else if (oldEvent.length > 0) {
+    alert("2- " + oldEvent[1]);
+    chrome.runtime.sendMessage({type: "setInteraction", url: oldEvent[1], xpath: [oldEvent[2], oldEvent[3]], eventType: oldEvent[4], val: oldEvent[5]});
+    oldEvent = [];
+    return userIsTyping(element);
+  }
+
+  return false;
+}
+
+function getAbsoluteXpath(node, bits) {
+  // uses cardinality.  Will not work if any nodes are added/moved/removed in the DOM.  Fine for static stuff.
+  bits = bits ? bits : [];
+  var c = 0;
+  var b = node.nodeName;
+  var p = node.parentNode;
+
+  if (p) {
+    var els = p.getElementsByTagName(b);
+    if (els.length >  1) {
+      while (els[c] !== node) c++;
+      b += "[" + (c+1) + "]";
+    }
+    bits.push(b);
+    return getAbsoluteXpath(p, bits);
+  }
+  
+  //bits.push(b);  // this is #document.  Probably dont need it.
+  return bits.reverse().join("/");
 }
 
 function getXpath(node) {

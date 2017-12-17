@@ -34,11 +34,8 @@ function updateTableRecord(table, key, value) {
   	var cell2 = row.insertCell(2);
   	var cell3 = row.insertCell(3);
 
-  	//Create array with found locators
-  	var locatorsArray = value[0].split("&&");
-  	
-  	cell0.appendChild(createCombo(key, locatorsArray[0]));//Add combobox to first cell and set default value
-  	cell0.appendChild(createList(key, locatorsArray));//Add datalist with all found locators
+  	cell0.appendChild(createCombo(key, value[0][0]));//Add combobox to first cell and set default value
+  	cell0.appendChild(createList(key, value[0]));//Add datalist with all found locators
   	cell1.appendChild(createCombo(0, value[1]));//Add combobox to second cell and set default value
   	cell1.appendChild(evntsDataList);//Add datalist with all possible actions
   	cell2.appendChild(createInput(value[2]));//Add input to third cell and set value if not blank
@@ -99,21 +96,29 @@ document.getElementById("recordBtn").onclick = function () {
 
 //Clear btn functions
 document.getElementById("clearBtn").onclick = function () {
- 	clearLocalStorage();
+ 	chrome.runtime.sendMessage({type: "cleanTable"});
     clearTable();
 };
-
-function clearLocalStorage() {
-    chrome.storage.local.clear(function() {
-      var error = chrome.runtime.lastError;
-      if (error) {
-        console.error(error);
-      }
-    });
-}
 
 function clearTable() {
 	var old_tbody = document.getElementById("tableRecord").getElementsByTagName('tbody')[0];
 	var new_tbody = document.createElement('tbody');
 	old_tbody.parentNode.replaceChild(new_tbody, old_tbody)
+}
+
+//Remove tableRecord row
+document.querySelector('#tableRecord').onclick = function(event) {
+   deleteRow(event, "tableRecord");
+}
+
+//Remove tablePlayback row
+document.querySelector('#tablePlayback').onclick = function(event) {
+   deleteRow(event, "tablePlayback");
+}
+
+function deleteRow(event, tableID) {
+   var element = event.srcElement;
+   if (element.className != null && element.className == "material-icons") {
+   	document.getElementById(tableID).deleteRow(element.parentElement.parentElement.rowIndex);
+   }
 }
