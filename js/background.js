@@ -1,6 +1,7 @@
 
 var userInterMap = new Map();
-var mapKey = 1;
+var mapKey = 0;
+var oldXpath = null;
 
 chrome.runtime.onMessage.addListener(
 	    function(message, sender, sendResponse) {
@@ -26,13 +27,49 @@ function updateUserIntMap(message) {
     if (result.isRecording == true) {
       var tableRow = [message.xpath,
                   message.eventType,
-                  message.val,
+                  rightVal(message),
                   message.url];
-      userInterMap.set(mapKey, tableRow);
-      mapKey++;
+
+      updateMap(message, tableRow, (oldXpath === null));
       updateInteractions(mapToString());
     }
   });
+}
+
+function rightVal(message) {
+  switch(message.keyCode) {
+    case 9:
+      return "TAB";
+    case 13:
+      return "ENTER";
+    default:
+      return message.val;
+  }
+}
+
+function updateMap(message, tableRow, isOldNull) {
+  var isTyping = isUserTyping(message);
+  if (!isTyping || mapKey === 0 || (isTyping && isOldNull)) {
+    mapKey = mapKey + 1;
+  }
+
+  userInterMap.set(mapKey, tableRow);
+}
+
+function isUserTyping(message) {
+  if ((oldXpath === null || oldXpath == message.xpath[0]) && message.eventType == "keyup" && message.tagName == "INPUT" && !isTabEnter(message.keyCode)) {
+    oldXpath = message.xpath[0];
+    return true;
+  }
+
+  oldXpath = null;
+  return false;
+}
+
+function isTabEnter(keyCode) {
+  if (keyCode == 9 || keyCode == 13) 
+    return true;
+  return false;
 }
 
 function mapToString() {
@@ -68,6 +105,7 @@ function updateIsRecording(value) {
 function clearMapAndStorage() {
   clearLocalStorage();
   userInterMap = new Map();
+  mapKey = 1;
 }
 
 function clearLocalStorage() {

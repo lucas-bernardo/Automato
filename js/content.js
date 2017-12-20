@@ -1,6 +1,5 @@
 var evnts = ["click","focus","blur","keyup"];
 var oldEvent = [];
-var inputVal;
 // You can also Use mouseup/down, mousemove, resize and scroll
 for(var i=0;i<evnts.length;i++){
     window.addEventListener(""+evnts[i]+"", function(e){ myFunction(e); }, false);
@@ -11,45 +10,27 @@ function myFunction(e) {
 
     if (evt) {
 
-        if (evt.isPropagationStopped && evt.isPropagationStopped()) {
-            return;
-        }
-
-        var element = e.srcElement;
-        if (!element) {
+      if (evt.isPropagationStopped && evt.isPropagationStopped()) {
           return;
-        }
+      }
 
-        var url = window.location.href;
-        var xpath = getXpath(element);
-        var aXpath = getAbsoluteXpath(element);
-        var eventType = evt.type ? evt.type : evt;
+      var element = e.srcElement;
+      if (!element) {
+        return;
+      }
 
-        if (xpath && eventType) {
-          if (!userIsTyping(element, url, xpath, aXpath, eventType)) {
-            chrome.runtime.sendMessage({type: "setInteraction", url: url, xpath: [xpath, aXpath], eventType: eventType, val: inputVal});
-          }
-        }
+      var keyCode = (e.keyCode ? e.keyCode : e.which);
+      var tagName = element.tagName;
+      var url = window.location.href;
+      var xpath = getXpath(element);
+      var aXpath = getAbsoluteXpath(element);
+      var eventType = evt.type ? evt.type : evt;
+      var inputVal = element.value;
+
+      if (xpath && eventType) {
+        chrome.runtime.sendMessage({type: "setInteraction", keyCode: keyCode, tagName: tagName, url: url, xpath: [xpath, aXpath], eventType: eventType, val: inputVal});
+      }
     }
-}
-
-function userIsTyping(element, url, xpath, aXpath, eventType) {//Talvex não passar todos esses vars
-  if ((oldEvent.length <= 0 || oldEvent[0] == element) && element.tagName == "INPUT") {
-    oldEvent[0] = element;
-    oldEvent[1] = url;
-    oldEvent[2] = xpath;
-    oldEvent[3] = aXpath;
-    oldEvent[4] = eventType;
-    oldEvent[5] = element.value;
-    return true;
-  } else if (oldEvent.length > 0) {
-    alert("2- " + oldEvent[1]);
-    chrome.runtime.sendMessage({type: "setInteraction", url: oldEvent[1], xpath: [oldEvent[2], oldEvent[3]], eventType: oldEvent[4], val: oldEvent[5]});
-    oldEvent = [];
-    return userIsTyping(element);
-  }
-
-  return false;
 }
 
 function getAbsoluteXpath(node, bits) {

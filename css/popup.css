@@ -143,6 +143,10 @@ table#tableRecord tbody td {
 	word-wrap: break-word;
 }
 
+table#tableRecord .dropdown-content {
+	text-align: center;
+}
+
 table#tableRecord tbody td:last-child {
 	width: 8%;
 	padding: 0;
