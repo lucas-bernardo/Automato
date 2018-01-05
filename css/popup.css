@@ -37,7 +37,7 @@ body {
   	overflow: hidden;
 }
 
-#crInternal-1 input#recName {
+#crInternal-1 input.recInput {
   	width: 93.5%;
   	background: #191c23;
 	color: #ffffff;
@@ -48,17 +48,21 @@ body {
   	padding: 5px 15px;
 }
 
-#crInternal-1 input#recName::-webkit-input-placeholder {
+#crInternal-1 input#startURL {
+  	margin-top: 2px;
+}
+
+#crInternal-1 input.recInput::-webkit-input-placeholder {
 	color: #ffffff !important;
 }
 
-#crInternal-1 input#recName:focus {
+#crInternal-1 input.recInput:focus {
     outline:none;
     background: #ffffff;
 	color: #000000;
 }
 
-/* Record action buttons */
+/* Record action button */
 #crInternal-2 {
 	display: block;
 	height: 9%;

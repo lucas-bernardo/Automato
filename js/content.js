@@ -1,11 +1,18 @@
-var evnts = ["click","focus","blur","keyup"];
+var evnts = ["click", "drag", "drop", "resize", "scroll","focus","blur","keyup"];
 var oldEvent = [];
-// You can also Use mouseup/down, mousemove, resize and scroll
+// Adding events to be caught
 for(var i=0;i<evnts.length;i++){
-    window.addEventListener(""+evnts[i]+"", function(e){ myFunction(e); }, false);
+    window.addEventListener(""+evnts[i]+"", function(e){ getUserAction(e); }, false);
 }
+//Adding refresh event listener(it is getting refresh and navigate, cus it gets the event of unload current page)
+//Maybe store current URL and check if its a refresh or navigation and if wasnt another event
+//Check if there is an event when refresh ends
+window.onbeforeunload = function(e) {
+  var url = window.location.href;
+  chrome.runtime.sendMessage({type: "setInteraction", keyCode: "", tagName: "", url: url, xpath: ["Browser"], eventType: "Refresh/Navigate", val: url});
+};
 
-function myFunction(e) {
+function getUserAction(e) {
     var evt = e || window.event;
 
     if (evt) {

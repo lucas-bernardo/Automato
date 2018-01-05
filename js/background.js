@@ -11,6 +11,10 @@ chrome.runtime.onMessage.addListener(
 	              break;
               case "isRecording":
                 updateIsRecording(message.rec);
+                updateStartURL(message.url);
+                break;
+              case "newURL":
+                updateStartURL(message.url);
                 break;
               case "cleanTable":
                 clearMapAndStorage();
@@ -99,6 +103,18 @@ function updateIsRecording(value) {
 
   chrome.storage.local.get("isRecording", function(result) {
     chrome.storage.local.set({isRecording: value});
+  });
+}
+
+function updateStartURL(value) {
+  // Check that there's some valid value there.
+  if(typeof value == 'undefined') {
+    alert('Error: No value specified');
+    return;
+  }
+
+  chrome.storage.local.get("startURL", function(result) {
+    chrome.storage.local.set({startURL: value});
   });
 }
 

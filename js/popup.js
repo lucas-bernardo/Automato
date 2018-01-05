@@ -4,11 +4,17 @@ chrome.storage.local.get("isRecording", function(result) {
   document.getElementById("recordBtn").checked = result.isRecording;
 });
 
+//set Start URL field
+chrome.storage.local.get("startURL", function(result) {
+  document.getElementById("startURL").value = result.startURL;
+});
+
+
 //var userInterMap = new Map();
 chrome.storage.local.get("interactions", function(data) {
     if(typeof data.interactions != 'undefined') {
         //document.getElementById("tableRecord").getElementsByTagName('tbody')[0].innerHTML += data.interactions;
-        var table = document.getElementById("tableRecord");
+        var table = document.getElementById("tableRecord").getElementsByTagName("tbody")[0];
         //var ar = data.interactions.split("(?<=\\G\\]d+,\\]d+,\\]d+),");
         var userInterMap = JSON.parse(data.interactions);
         Object.keys(userInterMap).map(function(key, index) {
@@ -89,10 +95,31 @@ function createIcon() {
   return newIcon;
 }
 
+//Input startURL updates the url on focus out event
+document.getElementById("startURL").addEventListener("focusout", 
+	function () {
+		chrome.runtime.sendMessage({type: "newURL", url: this.value});
+	}
+);
+
 //Recording Btn
 document.getElementById("recordBtn").onclick = function () {
- 	chrome.runtime.sendMessage({type: "isRecording", rec: document.getElementById("recordBtn").checked});
+	var isChecked = document.getElementById("recordBtn").checked;
+	var startURL = document.getElementById("startURL").value;
+
+	if (isChecked && urlIsEmpty(startURL)) {
+		document.getElementById("recordBtn").checked = false;
+		alert("Please, enter Start URL.")
+	} else {
+		if (isChecked) 
+			var newTab = chrome.tabs.create({ url: startURL });
+		chrome.runtime.sendMessage({type: "isRecording", rec: isChecked, url: startURL});
+	}
 };
+
+function urlIsEmpty(value) {
+	return value.length == 0;
+}
 
 //Clear btn functions
 document.getElementById("clearBtn").onclick = function () {
