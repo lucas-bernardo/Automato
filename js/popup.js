@@ -1,24 +1,28 @@
+var storage = chrome.storage.local;
 
 //set recording button
-chrome.storage.local.get("isRecording", function(result) {
+storage.get("isRecording", function(result) {
   document.getElementById("recordBtn").checked = result.isRecording;
 });
 
+//set Recording Name field
+storage.get("recName", function(result) {
+  document.getElementById("recName").value = result.recName;
+});
+
 //set Start URL field
-chrome.storage.local.get("startURL", function(result) {
+storage.get("startURL", function(result) {
   document.getElementById("startURL").value = result.startURL;
 });
 
 
 //var userInterMap = new Map();
-chrome.storage.local.get("interactions", function(data) {
-    if(typeof data.interactions != 'undefined') {
-        //document.getElementById("tableRecord").getElementsByTagName('tbody')[0].innerHTML += data.interactions;
+storage.get("setInteraction", function(data) {
+	var interactions = data.setInteraction;
+    if(typeof interactions != 'undefined') {
         var table = document.getElementById("tableRecord").getElementsByTagName("tbody")[0];
-        //var ar = data.interactions.split("(?<=\\G\\]d+,\\]d+,\\]d+),");
-        var userInterMap = JSON.parse(data.interactions);
+        var userInterMap = JSON.parse(interactions);
         Object.keys(userInterMap).map(function(key, index) {
-          //alert(key + ' = ' + userInterMap[key]);
           updateTableRecord(table, key, userInterMap[key]);
         });
     }
@@ -95,10 +99,17 @@ function createIcon() {
   return newIcon;
 }
 
-//Input startURL updates the url on focus out event
+//Input .recName updates the recording name on focus out event
+document.getElementById("recName").addEventListener("focusout", 
+	function () {
+		chrome.runtime.sendMessage({type: "recName", val: this.value});
+	}
+);
+
+//Input .startURL updates the url on focus out event
 document.getElementById("startURL").addEventListener("focusout", 
 	function () {
-		chrome.runtime.sendMessage({type: "newURL", url: this.value});
+		chrome.runtime.sendMessage({type: "startURL", val: this.value});
 	}
 );
 
@@ -113,7 +124,7 @@ document.getElementById("recordBtn").onclick = function () {
 	} else {
 		if (isChecked) 
 			var newTab = chrome.tabs.create({ url: startURL });
-		chrome.runtime.sendMessage({type: "isRecording", rec: isChecked, url: startURL});
+		chrome.runtime.sendMessage({type: "isRecording", val: isChecked});
 	}
 };
 

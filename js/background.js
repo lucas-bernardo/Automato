@@ -1,4 +1,5 @@
 
+var storage = chrome.storage.local;
 var userInterMap = new Map();
 var mapKey = 0;
 var oldXpath = null;
@@ -6,16 +7,14 @@ var oldXpath = null;
 chrome.runtime.onMessage.addListener(
 	    function(message, sender, sendResponse) {
 	        switch(message.type) {
+              case "isRecording":
+              case "recName":
+              case "startURL":
+                updateLocalStorage(message.type, message.val);
+                break;
 	            case "setInteraction":
                 updateUserIntMap(message);
 	              break;
-              case "isRecording":
-                updateIsRecording(message.rec);
-                updateStartURL(message.url);
-                break;
-              case "newURL":
-                updateStartURL(message.url);
-                break;
               case "cleanTable":
                 clearMapAndStorage();
                 break;
@@ -27,7 +26,7 @@ chrome.runtime.onMessage.addListener(
 );
 
 function updateUserIntMap(message) {
-  chrome.storage.local.get("isRecording", function(result) {
+  storage.get("isRecording", function(result) {
     if (result.isRecording == true) {
       var tableRow = [message.xpath,
                   message.eventType,
@@ -35,7 +34,7 @@ function updateUserIntMap(message) {
                   message.url];
 
       updateMap(message, tableRow, (oldXpath === null));
-      updateInteractions(mapToString());
+      updateLocalStorage(message.type, mapToString());
     }
   });
 }
@@ -61,7 +60,7 @@ function updateMap(message, tableRow, isOldNull) {
 }
 
 function isUserTyping(message) {
-  if ((oldXpath === null || oldXpath == message.xpath[0]) && message.eventType == "keyup" && message.tagName == "INPUT" && !isTabEnter(message.keyCode)) {
+  if (message.eventType.includes("scroll") || ((oldXpath === null || oldXpath == message.xpath[0]) && message.eventType == "keyup" && message.tagName == "INPUT" && !isTabEnter(message.keyCode))) {
     oldXpath = message.xpath[0];
     return true;
   }
@@ -82,39 +81,17 @@ function mapToString() {
   return JSON.stringify(obj);
 }
 
-function updateInteractions(value) {
-  // Check that there's some code there.
-  if(typeof value == 'undefined') {
-    alert('Error: No value specified');
-    return;
-  }
-
-  chrome.storage.local.get("interactions", function(result) {
-    chrome.storage.local.set({interactions: value});
-  });
-}
-
-function updateIsRecording(value) {
+function updateLocalStorage(key, value) {
   // Check that there's some valid value there.
   if(typeof value == 'undefined') {
     alert('Error: No value specified');
     return;
   }
 
-  chrome.storage.local.get("isRecording", function(result) {
-    chrome.storage.local.set({isRecording: value});
-  });
-}
-
-function updateStartURL(value) {
-  // Check that there's some valid value there.
-  if(typeof value == 'undefined') {
-    alert('Error: No value specified');
-    return;
-  }
-
-  chrome.storage.local.get("startURL", function(result) {
-    chrome.storage.local.set({startURL: value});
+  var storeObj= {};
+  storeObj[key] = value;
+  storage.get(key, function(result) {
+    storage.set(storeObj);
   });
 }
 
@@ -125,7 +102,7 @@ function clearMapAndStorage() {
 }
 
 function clearLocalStorage() {
-    chrome.storage.local.remove(["interactions"], function() {
+    storage.remove(["setInteraction"], function() {
       var error = chrome.runtime.lastError;
       if (error) {
         console.error(error);

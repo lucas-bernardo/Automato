@@ -1,5 +1,7 @@
 var evnts = ["click", "drag", "drop", "resize", "scroll","focus","blur","keyup"];
 var oldEvent = [];
+var oldXOffset = window.pageXOffset;
+var oldYOffset = window.pageYOffset;
 // Adding events to be caught
 for(var i=0;i<evnts.length;i++){
     window.addEventListener(""+evnts[i]+"", function(e){ getUserAction(e); }, false);
@@ -31,13 +33,26 @@ function getUserAction(e) {
       var url = window.location.href;
       var xpath = getXpath(element);
       var aXpath = getAbsoluteXpath(element);
+      var xpathArray = [xpath, aXpath];
       var eventType = evt.type ? evt.type : evt;
       var inputVal = element.value;
 
-      if (xpath && eventType) {
-        chrome.runtime.sendMessage({type: "setInteraction", keyCode: keyCode, tagName: tagName, url: url, xpath: [xpath, aXpath], eventType: eventType, val: inputVal});
+      if (eventType == "scroll") {
+        var newXOffset = window.pageXOffset;
+        var isHorizontalScroll = isXScroll(newXOffset);
+        eventType = (isHorizontalScroll ? "X " : "Y ") + eventType;
+        inputVal = isHorizontalScroll ? newXOffset : window.pageYOffset;
+        xpathArray = ["HTML/BODY"];
+      }
+
+      if (xpathArray[0] && eventType) {
+        chrome.runtime.sendMessage({type: "setInteraction", keyCode: keyCode, tagName: tagName, url: url, xpath: xpathArray, eventType: eventType, val: inputVal});
       }
     }
+}
+
+function isXScroll(newXOffset) {
+  return newXOffset != oldXOffset;
 }
 
 function getAbsoluteXpath(node, bits) {
@@ -68,6 +83,9 @@ function getXpath(node) {
   }
 
   var attrs = node.attributes;
+  if (attrs == undefined) {
+    return;
+  }
   var i = attrs.length;
   var tagName = node.tagName;
   var map = {};
