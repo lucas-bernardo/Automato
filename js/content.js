@@ -4,7 +4,7 @@ var oldXOffset = window.pageXOffset;
 var oldYOffset = window.pageYOffset;
 // Adding events to be caught
 for(var i=0;i<evnts.length;i++){
-    window.addEventListener(""+evnts[i]+"", function(e){ getUserAction(e); }, false);
+    window.addEventListener(""+evnts[i]+"", function(e){ getUserAction(e); }, true);
 }
 //Adding refresh event listener(it is getting refresh and navigate, cus it gets the event of unload current page)
 //Maybe store current URL and check if its a refresh or navigation and if wasnt another event
@@ -39,10 +39,11 @@ function getUserAction(e) {
 
       if (eventType == "scroll") {
         var newXOffset = window.pageXOffset;
-        var isHorizontalScroll = isXScroll(newXOffset);
-        eventType = (isHorizontalScroll ? "X " : "Y ") + eventType;
-        inputVal = isHorizontalScroll ? newXOffset : window.pageYOffset;
+        var newYOffset = window.pageYOffset;
+        eventType = eventType + " " + getScrollDirection(newXOffset, newYOffset);
+        inputVal = isXScroll(newXOffset) ? newXOffset : newYOffset;
         xpathArray = ["HTML/BODY"];
+        setOldOffSets(newXOffset, newYOffset);
       }
 
       if (xpathArray[0] && eventType) {
@@ -51,8 +52,27 @@ function getUserAction(e) {
     }
 }
 
+function getScrollDirection(newXOffset, newYOffset) {
+  if (newXOffset > oldXOffset) {
+    return "Right";
+  }
+  if (newXOffset < oldXOffset) {
+    return "Left";
+  }
+  if (newYOffset > oldYOffset) {
+    return "Down";
+  }
+
+  return "Up";
+}
+
 function isXScroll(newXOffset) {
   return newXOffset != oldXOffset;
+}
+
+function setOldOffSets(newXOffset, newYOffset) {
+  oldXOffset = newXOffset;
+  oldYOffset = newYOffset;
 }
 
 function getAbsoluteXpath(node, bits) {

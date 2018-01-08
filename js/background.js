@@ -3,6 +3,8 @@ var storage = chrome.storage.local;
 var userInterMap = new Map();
 var mapKey = 0;
 var oldXpath = null;
+var oldEvntType = null;
+var oldTagName = null;
 
 chrome.runtime.onMessage.addListener(
 	    function(message, sender, sendResponse) {
@@ -30,10 +32,10 @@ function updateUserIntMap(message) {
     if (result.isRecording == true) {
       var tableRow = [message.xpath,
                   message.eventType,
-                  rightVal(message),
+                  (message.eventType == "keyup") ? rightVal(message) : message.val,
                   message.url];
 
-      updateMap(message, tableRow, (oldXpath === null));
+      updateMap(message, tableRow);
       updateLocalStorage(message.type, mapToString());
     }
   });
@@ -50,27 +52,35 @@ function rightVal(message) {
   }
 }
 
-function updateMap(message, tableRow, isOldNull) {
-  var isTyping = isUserTyping(message);
-  if (!isTyping || mapKey === 0 || (isTyping && isOldNull)) {
+function updateMap(message, tableRow) {
+  var isSame = isSameElement(message);
+  if (!isSame || mapKey === 0 || (isSame && (oldXpath === null))) {
     mapKey = mapKey + 1;
   }
 
   userInterMap.set(mapKey, tableRow);
 }
 
-function isUserTyping(message) {
-  if (message.eventType.includes("scroll") || ((oldXpath === null || oldXpath == message.xpath[0]) && message.eventType == "keyup" && message.tagName == "INPUT" && !isTabEnter(message.keyCode))) {
+function isSameElement(message) {
+  if (isNullOrEqual(oldXpath, message.xpath[0]) && isNullOrEqual(oldEvntType, message.eventType) && isNullOrEqual(oldTagName, message.tagName) && !isTabEnter(message.keyCode)) {
     oldXpath = message.xpath[0];
+    oldEvntType = message.eventType;
+    oldTagName = message.tagName;
     return true;
   }
 
   oldXpath = null;
+  oldEvntType = null;
+  oldTagName = null;
   return false;
 }
 
+function isNullOrEqual(varOne, varTwo) {
+  return varOne == null || varOne == varTwo;
+}
+
 function isTabEnter(keyCode) {
-  if (keyCode == 9 || keyCode == 13) 
+  if (9 == keyCode || 13 == keyCode) 
     return true;
   return false;
 }
@@ -98,7 +108,7 @@ function updateLocalStorage(key, value) {
 function clearMapAndStorage() {
   clearLocalStorage();
   userInterMap = new Map();
-  mapKey = 1;
+  mapKey = 0;
 }
 
 function clearLocalStorage() {

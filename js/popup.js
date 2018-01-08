@@ -83,7 +83,7 @@ function createList(key, array) {
 function createInput(value) {
   var newInput = document.createElement("INPUT");;
   newInput.setAttribute("type", "text");
-  if (value) {
+  if (value != null) {
   	newInput.setAttribute("value", value);
   }
 
