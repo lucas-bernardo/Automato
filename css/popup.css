@@ -62,6 +62,17 @@ body {
 	color: #000000;
 }
 
+/* Execution buttons */
+#crInternal-2 #playContainer {
+    position: relative;
+    float: left;
+    margin: 1px 4px;
+  	background: #191c23;
+  	border: none;
+  	border-radius: 5px;
+    color: #4c4c4e;
+}
+
 /* Record action button */
 #crInternal-2 {
 	display: block;
@@ -72,7 +83,7 @@ body {
 }
 
 /* Clear All and Save buttons */
-#crInternal-2 .btnsContainer {
+#crInternal-2 #btnsContainer {
     position: relative;
     float: right;
     margin: 3px 0;
@@ -147,10 +158,6 @@ table#tableRecord tbody td {
 	word-wrap: break-word;
 }
 
-table#tableRecord .dropdown-content {
-	text-align: center;
-}
-
 table#tableRecord tbody td:last-child {
 	width: 8%;
 	padding: 0;
@@ -195,12 +202,13 @@ table#tableRecord tbody td input {
 /* Editable combobox */
 table#tableRecord tbody td .editableCombo {
 	opacity: 100;
+	text-align: center;
 }
 
-/*Removes dropdown arrow*/
+/*Removes dropdown arrow
 table#tableRecord tbody td input::-webkit-calendar-picker-indicator {
   display: none;
-} 
+}*/
 
 /* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
 /*Container with playback features*/

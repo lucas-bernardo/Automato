@@ -15,10 +15,13 @@ chrome.runtime.onMessage.addListener(
                 updateLocalStorage(message.type, message.val);
                 break;
 	            case "setInteraction":
-                updateUserIntMap(message);
+                updateUserInterMap(message);
 	              break;
               case "cleanTable":
                 clearMapAndStorage();
+                break;
+              case "removeRow":
+                removeUserInterMapKey(message.val);
                 break;
 	            default:
 	              console.error("Unrecognised message: ", message);
@@ -27,7 +30,7 @@ chrome.runtime.onMessage.addListener(
 	    }
 );
 
-function updateUserIntMap(message) {
+function updateUserInterMap(message) {
   storage.get("isRecording", function(result) {
     if (result.isRecording == true) {
       var tableRow = [message.xpath,
@@ -39,6 +42,13 @@ function updateUserIntMap(message) {
       updateLocalStorage(message.type, mapToString());
     }
   });
+}
+
+function removeUserInterMapKey(key) {
+  if (key > -1) {
+    userInterMap.delete(parseInt(key));
+    updateLocalStorage("setInteraction", mapToString());
+  }
 }
 
 function rightVal(message) {

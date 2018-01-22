@@ -7,12 +7,14 @@ storage.get("isRecording", function(result) {
 
 //set Recording Name field
 storage.get("recName", function(result) {
-  document.getElementById("recName").value = result.recName;
+	var name = result.recName;
+  	document.getElementById("recName").value = name ? name : "";
 });
 
 //set Start URL field
 storage.get("startURL", function(result) {
-  document.getElementById("startURL").value = result.startURL;
+	var url = result.startURL;
+  document.getElementById("startURL").value = url ? url : "";
 });
 
 
@@ -20,11 +22,13 @@ storage.get("startURL", function(result) {
 storage.get("setInteraction", function(data) {
 	var interactions = data.setInteraction;
     if(typeof interactions != 'undefined') {
-        var table = document.getElementById("tableRecord").getElementsByTagName("tbody")[0];
+        var table = document.getElementById("tableRecord");
+        var tableBody = table.getElementsByTagName("tbody")[0];
         var userInterMap = JSON.parse(interactions);
         Object.keys(userInterMap).map(function(key, index) {
-          updateTableRecord(table, key, userInterMap[key]);
+          updateTableRecord(tableBody, key, userInterMap[key]);
         });
+        activateToolbar(table);
     }
 });
 
@@ -136,6 +140,7 @@ function urlIsEmpty(value) {
 document.getElementById("clearBtn").onclick = function () {
  	chrome.runtime.sendMessage({type: "cleanTable"});
     clearTable();
+    activateToolbar(document.getElementById("tableRecord"));
 };
 
 function clearTable() {
@@ -146,17 +151,46 @@ function clearTable() {
 
 //Remove tableRecord row
 document.querySelector('#tableRecord').onclick = function(event) {
-   deleteRow(event, "tableRecord");
+   	var userInterMapKey = deleteRowAndGetMapKey(event, this);
+   	removeUserInterMapKey(userInterMapKey);
+   	activateToolbar(this);
+}
+
+function removeUserInterMapKey(userInterMapKey) {
+	chrome.runtime.sendMessage({type: "removeRow", val: userInterMapKey});
 }
 
 //Remove tablePlayback row
 document.querySelector('#tablePlayback').onclick = function(event) {
-   deleteRow(event, "tablePlayback");
+   deleteRowAndGetMapKey(event, this);
 }
 
-function deleteRow(event, tableID) {
+function deleteRowAndGetMapKey(event, table) {
    var element = event.srcElement;
-   if (element.className != null && element.className == "material-icons") {
-   	document.getElementById(tableID).deleteRow(element.parentElement.parentElement.rowIndex);
+   if ("material-icons" == element.className) {
+   	var rIndex = element.parentElement.parentElement.rowIndex;
+   	var userInterMapKey = getUserInterMapKeyByCellInputListAttr(table.rows[rIndex].cells[0].childNodes[0].attributes);
+   	table.deleteRow(rIndex);
+   	return userInterMapKey;
    }
+}
+
+function getUserInterMapKeyByCellInputListAttr(cellAttrs) {
+	var userInterMapKey = -1;
+	Array.prototype.slice.call(cellAttrs).forEach(function(item) {
+		if ("list" == item.name)
+			userInterMapKey = item.value;
+	});
+
+	return userInterMapKey;
+}
+
+//If tableRecord has rows it activates the toolBar
+function activateToolbar(table) {
+	var rowCount = table.getElementsByTagName("tbody")[0].rows.length
+	if (rowCount > 0) {
+		document.getElementById('playContainer').style.color = 'white';
+	} else {
+		document.getElementById('playContainer').style.color = '#4c4c4e';
+	}
 }
