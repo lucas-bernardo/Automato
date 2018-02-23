@@ -1,4 +1,5 @@
 var storage = chrome.storage.local;
+var EDITION_OPTION = "Save Edition";
 
 //set recording button
 storage.get("isRecording", function(result) {
@@ -28,15 +29,9 @@ storage.get("setInteraction", function(data) {
         Object.keys(userInterMap).map(function(key, index) {
           updateTableRecord(tableBody, key, userInterMap[key]);
         });
-        activateToolbar(table);
+        activateToolbar();
     }
 });
-
-//var evnts = ["click","focus","blur","keyup","keydown","keypressed"];
-var evntsDataList = createEvntsDataList();
-function createEvntsDataList() {
-	return createList(0, ["click","focus","blur","keyup","keydown","keypressed"]);
-}
 
 //Insert a row to table record
 function updateTableRecord(table, key, value) {
@@ -48,39 +43,76 @@ function updateTableRecord(table, key, value) {
   	var cell2 = row.insertCell(2);
   	var cell3 = row.insertCell(3);
 
-  	cell0.appendChild(createCombo(key, value[0][0]));//Add combobox to first cell and set default value
-  	cell0.appendChild(createList(key, value[0]));//Add datalist with all found locators
-  	cell1.appendChild(createCombo(0, value[1]));//Add combobox to second cell and set default value
-  	cell1.appendChild(evntsDataList);//Add datalist with all possible actions
+  	cell0.appendChild(createEditableCombo("locator" + key, value[0][0]));//Add combobox to first cell and set default value
+	cell0.appendChild(createSelect(key, value[0]));
+  	cell1.appendChild(createCombo("action" + key));//Add combobox to second cell and set default value
   	cell2.appendChild(createInput(value[2]));//Add input to third cell and set value if not blank
   	cell3.appendChild(createIcon());//Add delete icon to last cell
 }
 
 //Creates a regular combobox
-function createCombo(key, value) {
+function createEditableCombo(key, value) {
   var newCombo = document.createElement("INPUT");
+  newCombo.setAttribute("id", key);
   newCombo.setAttribute('class', 'editableCombo');
   newCombo.setAttribute('type', 'text');
-  newCombo.setAttribute('list', key);
-  if (value) {
-  	newCombo.setAttribute('value', value);
-  }
+  newCombo.setAttribute("value", value);
 
   return newCombo;
 }
 
-//Creates a regular datalist to be append in a combobox
-function createList(key, array) {
-  var dataList = document.createElement("DATALIST");
-  dataList.setAttribute("id", key);
+function createSelect(key, array) {
+  var select = document.createElement("SELECT");
+  select.setAttribute("id", key);
+  select.setAttribute('class', 'comboSelect');
+  //Create empty option to be filled by user alterations
+  var editionOption = document.createElement("OPTION");
+  editionOption.innerText = EDITION_OPTION;
+  select.appendChild(editionOption);
   //Creating combobox options
   for (i = 0; i < array.length; i++) {
     var option = document.createElement("OPTION");
     option.innerText = array[i];
-    dataList.appendChild(option);
+    select.appendChild(option);
+  }
+  addOnChangeToSelect(select);
+  resetSelectElement(select);
+
+  return select;
+}
+
+function addOnChangeToSelect(selectElement) {
+    selectElement.addEventListener('change',
+    function() {
+        var theinput = document.getElementById("locator" + this.id);
+        var idx = this.selectedIndex;
+        if (idx > 0) {
+            var content = this.options[idx].innerHTML;
+            theinput.value = content;
+        } else {
+            this.options[0].innerHTML = theinput.value ? theinput.value : EDITION_OPTION;
+        }
+        resetSelectElement(selectElement);
+    });
+}
+
+function resetSelectElement(selectElement) {
+    selectElement.selectedIndex = -1;
+}
+
+//Creates a regular select element
+function createCombo(key) {
+  var sElem = document.createElement("SELECT");
+  sElem.setAttribute("id", key);
+  //Creating combobox options
+  var evntsArray = ["click","focus","blur","keyup","keydown","keypressed"]
+  for (i = 0; i < evntsArray.length; i++) {
+    var option = document.createElement("OPTION");
+    option.innerText = evntsArray[i];
+    sElem.appendChild(option);
   }
 
-  return dataList;
+  return sElem;
 }
 
 //Creates a regular input
@@ -99,8 +131,20 @@ function createIcon() {
   var newIcon = document.createElement("i");
   newIcon.setAttribute("class", "material-icons");
   newIcon.innerText = "clear";
+  addOnClickToIcon(newIcon);
 
   return newIcon;
+}
+
+function addOnClickToIcon(iTag) {
+    iTag.addEventListener('click',
+    function() {
+        var userInterMapKey = deleteRowAndGetMapKey(this);
+        if (userInterMapKey) {
+            removeUserInterMapKey(userInterMapKey);
+            activateToolbar();
+        }
+    });
 }
 
 //Input .recName updates the recording name on focus out event
@@ -140,7 +184,7 @@ function urlIsEmpty(value) {
 document.getElementById("clearBtn").onclick = function () {
  	chrome.runtime.sendMessage({type: "cleanTable"});
     clearTable();
-    activateToolbar(document.getElementById("tableRecord"));
+    activateToolbar();
 };
 
 function clearTable() {
@@ -150,29 +194,20 @@ function clearTable() {
 }
 
 //Remove tableRecord row
-document.querySelector('#tableRecord').onclick = function(event) {
+/*document.querySelector('#tableRecord').onclick = function(event) {
    	var userInterMapKey = deleteRowAndGetMapKey(event, this);
-   	removeUserInterMapKey(userInterMapKey);
-   	activateToolbar(this);
-}
+    if (userInterMapKey) {
+       	removeUserInterMapKey(userInterMapKey);
+       	activateToolbar(this);
+    }
+}*/
 
-function removeUserInterMapKey(userInterMapKey) {
-	chrome.runtime.sendMessage({type: "removeRow", val: userInterMapKey});
-}
-
-//Remove tablePlayback row
-document.querySelector('#tablePlayback').onclick = function(event) {
-   deleteRowAndGetMapKey(event, this);
-}
-
-function deleteRowAndGetMapKey(event, table) {
-   var element = event.srcElement;
-   if ("material-icons" == element.className) {
-   	var rIndex = element.parentElement.parentElement.rowIndex;
-   	var userInterMapKey = getUserInterMapKeyByCellInputListAttr(table.rows[rIndex].cells[0].childNodes[0].attributes);
-   	table.deleteRow(rIndex);
-   	return userInterMapKey;
-   }
+function deleteRowAndGetMapKey(element) {
+    var table = element.parentElement.parentElement.parentElement.parentElement;
+    var rIndex = element.parentElement.parentElement.rowIndex;
+    var userInterMapKey = getUserInterMapKeyByCellInputListAttr(table.rows[rIndex].cells[0].childNodes[0].attributes);
+    table.deleteRow(rIndex);
+    return userInterMapKey;
 }
 
 function getUserInterMapKeyByCellInputListAttr(cellAttrs) {
@@ -185,9 +220,13 @@ function getUserInterMapKeyByCellInputListAttr(cellAttrs) {
 	return userInterMapKey;
 }
 
+function removeUserInterMapKey(userInterMapKey) {
+    chrome.runtime.sendMessage({type: "removeRow", val: userInterMapKey});
+}
+
 //If tableRecord has rows it activates the toolBar
-function activateToolbar(table) {
-	var rowCount = table.getElementsByTagName("tbody")[0].rows.length
+function activateToolbar() {
+	var rowCount = document.getElementById("tableRecord").getElementsByTagName("tbody")[0].rows.length
 	if (rowCount > 0) {
 		document.getElementById('playContainer').style.color = 'white';
 	} else {
