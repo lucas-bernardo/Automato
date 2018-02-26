@@ -161,6 +161,15 @@ document.getElementById("startURL").addEventListener("focusout",
 	}
 );
 
+//#playContainer buttons functions
+//#playPauseBtn - Starts, pauses or restarts the playback of rows in #tableRecord
+document.getElementById("playPauseBtn").onclick = function () {
+    var rowCount = getTableRowCount("tableRecord");
+    if (rowCount > 0) {
+        chrome.runtime.sendMessage({type: "playback", val: true});
+    }
+};
+
 //Recording Btn
 document.getElementById("recordBtn").onclick = function () {
 	var isChecked = document.getElementById("recordBtn").checked;
@@ -193,15 +202,6 @@ function clearTable() {
 	old_tbody.parentNode.replaceChild(new_tbody, old_tbody)
 }
 
-//Remove tableRecord row
-/*document.querySelector('#tableRecord').onclick = function(event) {
-   	var userInterMapKey = deleteRowAndGetMapKey(event, this);
-    if (userInterMapKey) {
-       	removeUserInterMapKey(userInterMapKey);
-       	activateToolbar(this);
-    }
-}*/
-
 function deleteRowAndGetMapKey(element) {
     var table = element.parentElement.parentElement.parentElement.parentElement;
     var rIndex = element.parentElement.parentElement.rowIndex;
@@ -226,10 +226,15 @@ function removeUserInterMapKey(userInterMapKey) {
 
 //If tableRecord has rows it activates the toolBar
 function activateToolbar() {
-	var rowCount = document.getElementById("tableRecord").getElementsByTagName("tbody")[0].rows.length
+	var rowCount = getTableRowCount("tableRecord");
 	if (rowCount > 0) {
 		document.getElementById('playContainer').style.color = 'white';
 	} else {
 		document.getElementById('playContainer').style.color = '#4c4c4e';
 	}
+}
+
+//Get table row count by id
+function getTableRowCount(tableID) {
+    return document.getElementById(tableID).getElementsByTagName("tbody")[0].rows.length
 }

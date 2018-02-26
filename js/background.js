@@ -7,28 +7,46 @@ var oldEvntType = null;
 var oldTagName = null;
 
 chrome.runtime.onMessage.addListener(
-	    function(message, sender, sendResponse) {
-	        switch(message.type) {
-              case "isRecording":
-              case "recName":
-              case "startURL":
-                updateLocalStorage(message.type, message.val);
-                break;
-	            case "setInteraction":
-                updateUserInterMap(message);
-	              break;
-              case "cleanTable":
-                clearMapAndStorage();
-                break;
-              case "removeRow":
-                removeUserInterMapKey(message.val);
-                break;
-	            default:
-	              console.error("Unrecognised message: ", message);
-	        }
-          sendResponse();
-	    }
+  function(message, sender, sendResponse) {
+    switch(message.type) {
+      case "cleanTable":
+        clearMapAndStorage();
+        break;
+      case "isRecording":
+      case "recName":
+      case "startURL":
+        updateLocalStorage(message.type, message.val);
+        break;
+      case "playback":
+        playback(message.val);
+        break;
+      case "removeRow":
+        removeUserInterMapKey(message.val);
+        break;
+      case "setInteraction":
+        updateUserInterMap(message);
+        break;
+      default:
+        console.error("Unrecognised message: ", message);
+    }
+    sendResponse();
+  }
 );
+
+function clearMapAndStorage() {
+  clearLocalStorage();
+  userInterMap = new Map();
+  mapKey = 0;
+}
+
+function clearLocalStorage() {
+  storage.remove(["setInteraction"], function() {
+    var error = chrome.runtime.lastError;
+    if (error) {
+      console.error(error);
+    }
+  });
+}
 
 function updateUserInterMap(message) {
   storage.get("isRecording", function(result) {
@@ -72,7 +90,7 @@ function updateMap(message, tableRow) {
 }
 
 function isSameElement(message) {
-  if (isNullOrEqual(oldXpath, message.xpath[0]) && isNullOrEqual(oldEvntType, message.eventType) && isNullOrEqual(oldTagName, message.tagName) && !isTabEnter(message.keyCode)) {
+  if (isNullOrEqual(oldXpath, message.xpath[0]) && isNullOrEqual(oldTagName, message.tagName) && isNullOrEqualEvnt(oldEvntType, message.eventType) && !isTabEnter(message.keyCode)) {
     oldXpath = message.xpath[0];
     oldEvntType = message.eventType;
     oldTagName = message.tagName;
@@ -87,6 +105,10 @@ function isSameElement(message) {
 
 function isNullOrEqual(varOne, varTwo) {
   return varOne == null || varOne == varTwo;
+}
+
+function isNullOrEqualEvnt(varOne, varTwo) {
+  return varOne == null || varOne == varTwo || ("focus" == varOne && "click" == varTwo);
 }
 
 function isTabEnter(keyCode) {
@@ -115,17 +137,18 @@ function updateLocalStorage(key, value) {
   });
 }
 
-function clearMapAndStorage() {
-  clearLocalStorage();
-  userInterMap = new Map();
-  mapKey = 0;
+function playback(exec) {
+  if (exec) {
+    userInterMap.forEach(execValue);
+  }
 }
 
-function clearLocalStorage() {
-    storage.remove(["setInteraction"], function() {
-      var error = chrome.runtime.lastError;
-      if (error) {
-        console.error(error);
-      }
-    });
+function execValue(value, key, map) {
+  chrome.tabs.query({active: true},
+    function(tabs){
+      chrome.tabs.sendMessage(tabs[0].id, {action: value},
+        function(response) {
+
+        });  
+  });
 }
