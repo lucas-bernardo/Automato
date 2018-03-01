@@ -1,7 +1,7 @@
 
 /*----------------------------------------------------- Recorder -----------------------------------------------------*/
 
-var evnts = ["click", "drag", "drop", "resize", "scroll","focus","blur","keyup"];
+var evnts = ["click", "drag", "drop", "resize", "scroll","keyup"];//,"blur","focus"
 var oldEvent = [];
 var oldXOffset = window.pageXOffset;
 var oldYOffset = window.pageYOffset;
@@ -43,16 +43,34 @@ function getUserAction(e) {
       if (eventType == "scroll") {
         var newXOffset = window.pageXOffset;
         var newYOffset = window.pageYOffset;
-        eventType = eventType + " " + getScrollDirection(newXOffset, newYOffset);
-        inputVal = isXScroll(newXOffset) ? newXOffset : newYOffset;
-        xpathArray = ["HTML/BODY"];
-        setOldOffSets(newXOffset, newYOffset);
+        if (isScrollValid(newXOffset, newYOffset)) {
+          eventType = eventType + " " + getScrollDirection(newXOffset, newYOffset);
+          inputVal = isXScroll(newXOffset) ? newXOffset : newYOffset;
+          xpathArray = ["HTML/BODY"];
+          setOldOffSets(newXOffset, newYOffset);
+        } else {
+          //In case it detects a scroll but the action occurs on an element
+          eventType = null;
+        }
       }
 
       if (xpathArray[0] && eventType) {
         chrome.runtime.sendMessage({type: "setInteraction", keyCode: keyCode, tagName: tagName, url: url, xpath: xpathArray, eventType: eventType, val: inputVal});
       }
     }
+}
+//get selected text if any, use after mouse up
+function getSelectedText() {
+    if (window.getSelection) {
+        return window.getSelection().toString();
+    } else if (document.selection) {
+        return document.selection.createRange().text;
+    }
+    return '';
+}
+
+function isScrollValid(newXOffset, newYOffset) {
+  return newXOffset != oldXOffset || newYOffset != oldYOffset;
 }
 
 function getScrollDirection(newXOffset, newYOffset) {
@@ -226,11 +244,15 @@ function isNotEmpty(val) {
 
 /*----------------------------------------------------- Playback -----------------------------------------------------*/
 
-chrome.extension.onMessage.addListener(function(msg, sender, sendResponse) {
-
-  if (msg.action) {
-    simulate(getElementByXpath(msg.action[0][0]), msg.action[1]);
-  }
+chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
+    var msgMap = msg.map;
+    if (msgMap) {
+      var userInterMap = JSON.parse(msgMap);
+      Object.keys(userInterMap).map(function(key, index) {
+        var value = userInterMap[key];
+        generateEvent(getElementByXpath(value[0][0]), value[1], value[2]);
+      });
+    }
 });
 
 //find element by xpath
@@ -238,39 +260,51 @@ function getElementByXpath(path) {
   return document.evaluate(path, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
 }
 
-//simulate(document.getElementById("btn"), "click", { pointerX: 123, pointerY: 321 }) for XY mouse positioning
-function simulate(element, eventName) {
-    var options = extend(defaultOptions, arguments[2] || {});
-    var oEvent, eventType = null;
+function generateEvent(element, eventName, value) {
+  var options = extend(defaultOptions, arguments[2] || {});
+  var oEvent, eventType = null;
 
-    for (var name in eventMatchers) {
-        if (eventMatchers[name].test(eventName)) {
-            eventType = name;
-            break;
-        }
-    }
+  for (var name in eventMatchers) {
+      if (eventMatchers[name].test(eventName)) {
+          eventType = name;
+          break;
+      }
+  }
 
-    if (!eventType)
-        throw new SyntaxError('Only HTMLEvents and MouseEvents interfaces are supported');
+  if (!eventType)
+      throw new SyntaxError(eventName + ' - Only HTMLEvents and MouseEvents interfaces are supported - ' + eventType);
 
-    if (document.createEvent) {
-        oEvent = document.createEvent(eventType);
-        if (eventType == 'HTMLEvents') {
-            oEvent.initEvent(eventName, options.bubbles, options.cancelable);
-        } else {
-            oEvent.initMouseEvent(eventName, options.bubbles, options.cancelable, document.defaultView,
-            options.button, options.pointerX, options.pointerY, options.pointerX, options.pointerY,
-            options.ctrlKey, options.altKey, options.shiftKey, options.metaKey, options.button, element);
-        }
-        element.dispatchEvent(oEvent);
-    } else {
-        options.clientX = options.pointerX;
-        options.clientY = options.pointerY;
-        var evt = document.createEventObject();
-        oEvent = extend(evt, options);
-        element.fireEvent('on' + eventName, oEvent);
-    }
-    return element;
+  oEvent = document.createEvent(eventType);
+  switch (eventType) {
+    case 'HTMLEvents':
+      //if value is not undefined write it on the element 
+      if (value) {
+        element.value = value;
+        oEvent.initEvent("change", false, true);
+      } else {
+        oEvent.initEvent(eventName, options.bubbles, options.cancelable);
+      }
+      break;
+    case 'MouseEvents':
+      oEvent.initMouseEvent(eventName, options.bubbles, options.cancelable, document.defaultView,
+      options.button, options.pointerX, options.pointerY, options.pointerX, options.pointerY,
+      options.ctrlKey, options.altKey, options.shiftKey, options.metaKey, options.button, element);
+      break;
+    case 'KeyboardEvents':
+      fireKey(element,'a');
+      break;
+  }
+
+  var cancelled = !element.dispatchEvent(oEvent);
+  if (cancelled) {
+    // A handler called preventDefault.
+    console.log("cancelled");
+  } else {
+    // None of the handlers called preventDefault.
+    console.log("not cancelled");
+  }
+
+  return element;
 }
 
 function extend(destination, source) {
@@ -280,7 +314,7 @@ function extend(destination, source) {
 }
 
 var eventMatchers = {
-    'HTMLEvents': /^(?:load|unload|abort|error|select|change|submit|reset|focus|blur|resize|scroll)$/,
+    'HTMLEvents': /^(?:load|unload|abort|error|select|change|submit|reset|focus|blur|resize|scroll|keydown|keyup|keypress)$/,
     'MouseEvents': /^(?:click|dblclick|mouse(?:down|up|over|move|out))$/
 }
 
@@ -295,3 +329,20 @@ var defaultOptions = {
     bubbles: true,
     cancelable: true
 }
+
+function fireKey(el,key) {
+  var keyCode = key.charCodeAt(0);
+  if(document.createEventObject) {
+      var eventObj = document.createEventObject();
+      eventObj.keyCode = keyCode;
+      el.fireEvent("onkeydown", eventObj);
+      eventObj.keyCode = keyCode;   
+  }else if(document.createEvent)
+  {
+      var eventObj = document.createEvent("Events");
+      eventObj.initEvent("keydown", true, true);
+      eventObj.which = keyCode; 
+      eventObj.keyCode = keyCode;
+      el.dispatchEvent(eventObj);
+  }
+} 

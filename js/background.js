@@ -138,17 +138,11 @@ function updateLocalStorage(key, value) {
 }
 
 function playback(exec) {
-  if (exec) {
-    userInterMap.forEach(execValue);
-  }
-}
-
-function execValue(value, key, map) {
-  chrome.tabs.query({active: true},
-    function(tabs){
-      chrome.tabs.sendMessage(tabs[0].id, {action: value},
-        function(response) {
-
-        });  
+  chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {          
+   if (changeInfo.status == 'complete') {   
+      chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
+         chrome.tabs.sendMessage(tabs[0].id, {map: mapToString(), exec:exec}, function(response) {});  
+      });
+   }
   });
 }

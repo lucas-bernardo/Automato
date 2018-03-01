@@ -45,7 +45,7 @@ function updateTableRecord(table, key, value) {
 
   	cell0.appendChild(createEditableCombo("locator" + key, value[0][0]));//Add combobox to first cell and set default value
 	cell0.appendChild(createSelect(key, value[0]));
-  	cell1.appendChild(createCombo("action" + key));//Add combobox to second cell and set default value
+  	cell1.appendChild(createCombo("action" + key, value[1]));//Add combobox to second cell and set default value
   	cell2.appendChild(createInput(value[2]));//Add input to third cell and set value if not blank
   	cell3.appendChild(createIcon());//Add delete icon to last cell
 }
@@ -101,15 +101,22 @@ function resetSelectElement(selectElement) {
 }
 
 //Creates a regular select element
-function createCombo(key) {
+function createCombo(id, toSelect) {
   var sElem = document.createElement("SELECT");
-  sElem.setAttribute("id", key);
+  sElem.setAttribute("id", id);
   //Creating combobox options
   var evntsArray = ["click","focus","blur","keyup","keydown","keypressed"]
   for (i = 0; i < evntsArray.length; i++) {
     var option = document.createElement("OPTION");
     option.innerText = evntsArray[i];
     sElem.appendChild(option);
+  }
+
+  for(var i, j = 0; i = sElem.options[j]; j++) {
+    if(i.value == toSelect) {
+        sElem.selectedIndex = j;
+        break;
+    }
   }
 
   return sElem;
@@ -166,7 +173,9 @@ document.getElementById("startURL").addEventListener("focusout",
 document.getElementById("playPauseBtn").onclick = function () {
     var rowCount = getTableRowCount("tableRecord");
     if (rowCount > 0) {
-        chrome.runtime.sendMessage({type: "playback", val: true});
+        var startURL = document.getElementById("startURL").value;
+        chrome.tabs.create({ url: startURL });
+        chrome.runtime.sendMessage({type: "playback", val: 1});
     }
 };
 
@@ -180,7 +189,7 @@ document.getElementById("recordBtn").onclick = function () {
 		alert("Please, enter Start URL.")
 	} else {
 		if (isChecked) 
-			var newTab = chrome.tabs.create({ url: startURL });
+			chrome.tabs.create({ url: startURL });
 		chrome.runtime.sendMessage({type: "isRecording", val: isChecked});
 	}
 };
