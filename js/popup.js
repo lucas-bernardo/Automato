@@ -105,7 +105,7 @@ function createCombo(id, toSelect) {
   var sElem = document.createElement("SELECT");
   sElem.setAttribute("id", id);
   //Creating combobox options
-  var evntsArray = ["click","focus","blur","keyup","keydown","keypressed"]
+  var evntsArray = ["focus", "click", "copy", "paste", "select", "resize", "scroll","keyup"]
   for (i = 0; i < evntsArray.length; i++) {
     var option = document.createElement("OPTION");
     option.innerText = evntsArray[i];

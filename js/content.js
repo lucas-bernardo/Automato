@@ -1,7 +1,7 @@
 
 /*----------------------------------------------------- Recorder -----------------------------------------------------*/
 
-var evnts = ["click", "drag", "drop", "resize", "scroll","keyup"];//,"blur","focus"
+var evnts = ["focus", "click", "copy", "paste", "select", "resize", "scroll","keyup"];//,"blur","drag", "drop"
 var oldEvent = [];
 var oldXOffset = window.pageXOffset;
 var oldYOffset = window.pageYOffset;
@@ -26,39 +26,81 @@ function getUserAction(e) {
           return;
       }
 
-      var element = e.srcElement;
+      var element = evt.target || evt.srcElement;;
       if (!element) {
         return;
       }
 
-      var keyCode = (e.keyCode ? e.keyCode : e.which);
+      var keyCode = (evt.keyCode ? evt.keyCode : evt.which);
       var tagName = element.tagName;
       var url = window.location.href;
       var xpath = getXpath(element);
       var aXpath = getAbsoluteXpath(element);
-      var xpathArray = [xpath, aXpath];
+      var xpathArray = (xpath && aXpath) ? [xpath, aXpath] : undefined;
       var eventType = evt.type ? evt.type : evt;
       var inputVal = element.value;
 
-      if (eventType == "scroll") {
-        var newXOffset = window.pageXOffset;
-        var newYOffset = window.pageYOffset;
-        if (isScrollValid(newXOffset, newYOffset)) {
-          eventType = eventType + " " + getScrollDirection(newXOffset, newYOffset);
-          inputVal = isXScroll(newXOffset) ? newXOffset : newYOffset;
-          xpathArray = ["HTML/BODY"];
-          setOldOffSets(newXOffset, newYOffset);
-        } else {
-          //In case it detects a scroll but the action occurs on an element
-          eventType = null;
-        }
+      switch (eventType) {
+        case "scroll":
+          inputVal = getInputVal(element, xpathArray);
+          xpathArray = getNewXpathArray(xpathArray);
+          break;
+        case "select":
+          inputVal = element.selectionStart + " - " + element.selectionEnd;
+        break;
+        case "click":
+        case "focus":
+          if (tagName)
+            eventType = (tagName.toLowerCase() == "input" ? "focus" : "click");
+        break;
       }
 
-      if (xpathArray[0] && eventType) {
+      if ((xpathArray && xpathArray[0]) && eventType) {
         chrome.runtime.sendMessage({type: "setInteraction", keyCode: keyCode, tagName: tagName, url: url, xpath: xpathArray, eventType: eventType, val: inputVal});
       }
     }
 }
+
+function getInputVal(element, xpathArray) {
+  var newXOffset;
+  var newYOffset;
+  if (xpathArray) {
+    newXOffset = element.scrollLeft;
+    newYOffset = element.scrollTop;
+  } else {
+    newXOffset = window.pageXOffset;
+    newYOffset = window.pageYOffset;
+  }
+
+  return newXOffset + " - " + newYOffset;
+}
+
+function getNewXpathArray(xpathArray) {
+  return xpathArray ? xpathArray : ["HTML"];
+}
+
+function drop_handler(evt) {
+ console.log("Drop");
+ evt.preventDefault();
+ var data = evt.originalEvent.dataTransfer.items;
+ var fList = evt.originalEvent.dataTransfer.files;
+ for (var i = 0; i < data.length; i += 1) {
+   if ((data[i].kind == 'string') && (data[i].type.match('^text/plain'))) {
+     // This item is the target node
+     data[i].getAsString(function (s){
+       evt.target.appendChild(document.getElementById(s)); 
+     });
+   } else if (data[i].kind == 'file') {
+     // Drag data item is a file
+     var entry = data[i].webkitGetAsEntry();
+     chrome.fileSystem.getDisplayPath(entry, function(path) {
+        console.log(path);
+        // do something with path
+      });
+   }
+ }
+}
+
 //get selected text if any, use after mouse up
 function getSelectedText() {
     if (window.getSelection) {
@@ -69,35 +111,12 @@ function getSelectedText() {
     return '';
 }
 
-function isScrollValid(newXOffset, newYOffset) {
-  return newXOffset != oldXOffset || newYOffset != oldYOffset;
-}
-
-function getScrollDirection(newXOffset, newYOffset) {
-  if (newXOffset > oldXOffset) {
-    return "Right";
-  }
-  if (newXOffset < oldXOffset) {
-    return "Left";
-  }
-  if (newYOffset > oldYOffset) {
-    return "Down";
-  }
-
-  return "Up";
-}
-
-function isXScroll(newXOffset) {
-  return newXOffset != oldXOffset;
-}
-
-function setOldOffSets(newXOffset, newYOffset) {
-  oldXOffset = newXOffset;
-  oldYOffset = newYOffset;
-}
-
 function getAbsoluteXpath(node, bits) {
-  // uses cardinality.  Will not work if any nodes are added/moved/removed in the DOM.  Fine for static stuff.
+  
+  if (node == window) {
+    return;
+  }
+
   bits = bits ? bits : [];
   var c = 0;
   var b = node.nodeName;
@@ -243,17 +262,30 @@ function isNotEmpty(val) {
 }
 
 /*----------------------------------------------------- Playback -----------------------------------------------------*/
+var myVar;
 
 chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
     var msgMap = msg.map;
     if (msgMap) {
+      var count = 1;
       var userInterMap = JSON.parse(msgMap);
-      Object.keys(userInterMap).map(function(key, index) {
-        var value = userInterMap[key];
-        generateEvent(getElementByXpath(value[0][0]), value[1], value[2]);
-      });
+      if (userInterMap) {
+        execAndCount(count, userInterMap);//First event does not need to be paced
+        myVar = setInterval(function(){ execAndCount(count++, userInterMap); }, (1 * 1000));
+      }
     }
 });
+
+//Wait for page to load and then set the speed pace
+//Or just set the speed pace
+function execAndCount(count, userInterMap) {
+  if (count > Object.keys(userInterMap).length) {
+    clearInterval(myVar);
+    return;
+  }
+  var value = userInterMap[count];
+  generateEvent(getElementByXpath(value[0][0]), value[1], value[2]);
+}
 
 //find element by xpath
 function getElementByXpath(path) {
@@ -265,7 +297,7 @@ function generateEvent(element, eventName, value) {
   var oEvent, eventType = null;
 
   for (var name in eventMatchers) {
-      if (eventMatchers[name].test(eventName)) {
+      if (eventMatchers[name].test(eventName.toLowerCase())) {
           eventType = name;
           break;
       }
@@ -274,37 +306,24 @@ function generateEvent(element, eventName, value) {
   if (!eventType)
       throw new SyntaxError(eventName + ' - Only HTMLEvents and MouseEvents interfaces are supported - ' + eventType);
 
-  oEvent = document.createEvent(eventType);
-  switch (eventType) {
-    case 'HTMLEvents':
-      //if value is not undefined write it on the element 
-      if (value) {
-        element.value = value;
-        oEvent.initEvent("change", false, true);
-      } else {
-        oEvent.initEvent(eventName, options.bubbles, options.cancelable);
-      }
+  switch (eventName.toLowerCase()) {
+    case 'click':
+      element.click();
+    case 'focus':
+      element.focus();
       break;
-    case 'MouseEvents':
-      oEvent.initMouseEvent(eventName, options.bubbles, options.cancelable, document.defaultView,
-      options.button, options.pointerX, options.pointerY, options.pointerX, options.pointerY,
-      options.ctrlKey, options.altKey, options.shiftKey, options.metaKey, options.button, element);
+    case 'copy':
+    case 'paste':
+    case 'select':
+    case 'resize':
+    case 'scroll':
+      var scrollValues = value.split(" - ");
+      element['scrollLeft'] = scrollValues[0];
+      element['scrollTop'] = scrollValues[1];
       break;
-    case 'KeyboardEvents':
-      fireKey(element,'a');
-      break;
+    case 'keyup':
+      element.value = value;
   }
-
-  var cancelled = !element.dispatchEvent(oEvent);
-  if (cancelled) {
-    // A handler called preventDefault.
-    console.log("cancelled");
-  } else {
-    // None of the handlers called preventDefault.
-    console.log("not cancelled");
-  }
-
-  return element;
 }
 
 function extend(destination, source) {
@@ -314,8 +333,7 @@ function extend(destination, source) {
 }
 
 var eventMatchers = {
-    'HTMLEvents': /^(?:load|unload|abort|error|select|change|submit|reset|focus|blur|resize|scroll|keydown|keyup|keypress)$/,
-    'MouseEvents': /^(?:click|dblclick|mouse(?:down|up|over|move|out))$/
+    'ValidEvents': /^(?:load|unload|abort|error|select|change|submit|reset|focus|blur|resize|scroll|keydown|keyup|keypress|click|dblclick|mouse(?:down|up|over|move|out))$/
 }
 
 var defaultOptions = {

@@ -92,7 +92,7 @@ function updateMap(message, tableRow) {
 function isSameElement(message) {
   if (isNullOrEqual(oldXpath, message.xpath[0]) && isNullOrEqual(oldTagName, message.tagName) && isNullOrEqualEvnt(oldEvntType, message.eventType) && !isTabEnter(message.keyCode)) {
     oldXpath = message.xpath[0];
-    oldEvntType = message.eventType;
+    oldEvntType = ("focus" == oldEvntType && "click" == message.eventType) ? "focus" : message.eventType;
     oldTagName = message.tagName;
     return true;
   }
@@ -103,12 +103,12 @@ function isSameElement(message) {
   return false;
 }
 
-function isNullOrEqual(varOne, varTwo) {
-  return varOne == null || varOne == varTwo;
+function isNullOrEqual(varOld, varNew) {
+  return varOld == null || varOld == varNew;
 }
 
-function isNullOrEqualEvnt(varOne, varTwo) {
-  return varOne == null || varOne == varTwo || ("focus" == varOne && "click" == varTwo);
+function isNullOrEqualEvnt(varOld, varNew) {
+  return varOld == null || varOld == varNew || ("focus" == varOld && "click" == varNew);
 }
 
 function isTabEnter(keyCode) {
@@ -139,9 +139,9 @@ function updateLocalStorage(key, value) {
 
 function playback(exec) {
   chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {          
-   if (changeInfo.status == 'complete') {   
+   if (changeInfo.status == 'complete') {
       chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
-         chrome.tabs.sendMessage(tabs[0].id, {map: mapToString(), exec:exec}, function(response) {});  
+         chrome.tabs.sendMessage(tabs[0].id, {map: mapToString(), exec:exec}, function(response) {});
       });
    }
   });
