@@ -1,7 +1,8 @@
 
 var storage = chrome.storage.local;
-var userInterMap = new Map();
 var mapKey = 0;
+var userInterMap = new Map();
+var speed = 0;
 var oldXpath = null;
 var oldEvntType = null;
 var oldTagName = null;
@@ -15,6 +16,7 @@ chrome.runtime.onMessage.addListener(
       case "isRecording":
       case "recName":
       case "startURL":
+      case "setSpeed":
         updateLocalStorage(message.type, message.val);
         break;
       case "playback":

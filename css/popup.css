@@ -64,7 +64,10 @@ body {
 
 /* Buttons */
 #crInternal-2 {
-	padding-left: 0;	
+	display: block;
+	height: 9%;
+	width: 99%;
+	margin-left: 2px;
 }
 
 /* Execution buttons */
@@ -78,14 +81,57 @@ body {
     color: #4c4c4e;
 }
 
-/* Record action button */
-#crInternal-2 {
-	display: block;
-	height: 9%;
-	width: 99%;
-	margin-left: 2px;
-	overflow: auto;
+#crInternal-2 #playContainer #speed {
+    position: relative;
+    float: left;
+    margin: 3px 5px;
+    height: 19px;
+    width: 19px;
 }
+
+#crInternal-2 #playContainer #slidecontainer {
+	position:absolute;top:22px;left:0px;
+    width: 100%; /* Width of the outside container */
+    z-index: 10;
+    display: none;
+  	background: #191c23;
+  	border: none;
+  	border-bottom-left-radius: 5px;
+  	border-bottom-right-radius: 5px;
+}
+
+/* The slider itself */
+#crInternal-2 #playContainer #slidecontainer .slider {
+    -webkit-appearance: none;
+    width: 92%;
+    height: 5px;
+    margin-bottom: 10px;
+    margin-left: 6px;
+    border-radius: 5px;
+    background: #d3d3d3;
+    outline: none;
+    opacity: 0.7;
+    -webkit-transition: opacity .15s ease-in-out;
+    transition: opacity .15s ease-in-out;
+}
+
+/* Mouse-over effects */
+#crInternal-2 #playContainer #slidecontainer .slider:hover {
+    opacity: 1; /* Fully shown on mouse-over */
+}
+
+/* The slider handle (use -webkit- (Chrome, Opera, Safari, Edge) and -moz- (Firefox) to override default look) */ 
+#crInternal-2 #playContainer #slidecontainer .slider::-webkit-slider-thumb {
+    -webkit-appearance: none; /* Override default look */
+    appearance: none;
+    border-radius: 15px;
+    width: 15px; /* Set a specific slider handle width */
+    height: 15px; /* Slider handle height */
+    background: #00cc08; /* Green background */
+    cursor: pointer; /* Cursor on hover */
+}
+
+/* Record action button */
 
 /* Clear All and Save buttons */
 #crInternal-2 #btnsContainer {

@@ -18,6 +18,11 @@ storage.get("startURL", function(result) {
   document.getElementById("startURL").value = url ? url : "";
 });
 
+//set speedSlider
+storage.get("setSpeed", function(result) {
+    var speed = result.setSpeed;
+  document.getElementById("speedSlider").value = speed ? speed : 5;
+});
 
 //var userInterMap = new Map();
 storage.get("setInteraction", function(data) {
@@ -238,12 +243,30 @@ function activateToolbar() {
 	var rowCount = getTableRowCount("tableRecord");
 	if (rowCount > 0) {
 		document.getElementById('playContainer').style.color = 'white';
+        document.getElementById("speed").src = "imgs/speed_white.png";
 	} else {
 		document.getElementById('playContainer').style.color = '#4c4c4e';
+        document.getElementById("speed").src = "imgs/speed_grey.png";
 	}
 }
 
 //Get table row count by id
 function getTableRowCount(tableID) {
     return document.getElementById(tableID).getElementsByTagName("tbody")[0].rows.length
+}
+
+//Toggle speedSlider
+document.getElementById("speed").onclick = function () {
+    var x = document.getElementById("slidecontainer");
+    if (x.style.display === "" || x.style.display === "none") {
+        x.style.display = "block";
+    } else {
+        x.style.display = "none";
+    }
+}
+
+//Update speed value
+document.getElementById("speedSlider").onmouseout = function() {
+    document.getElementById("slidecontainer").style.display = "none";
+    chrome.runtime.sendMessage({type: "setSpeed", val: this.value});
 }
